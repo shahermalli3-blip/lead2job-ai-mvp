@@ -24,6 +24,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 16px;
       margin-bottom: 25px;
     }
 
@@ -37,6 +38,7 @@
       color: #15803d;
       padding: 10px 16px;
       border-radius: 20px;
+      white-space: nowrap;
     }
 
     .card {
@@ -114,6 +116,7 @@
     }
 
     button {
+      width: 100%;
       background: #2563eb;
       color: white;
       border: 0;
@@ -122,13 +125,31 @@
       font-size: 16px;
       cursor: pointer;
     }
+
+    button:disabled {
+      opacity: .65;
+      cursor: not-allowed;
+    }
+
+    .result {
+      margin-top: 12px;
+      font-weight: 700;
+    }
+
+    .result.ok { color: #15803d; }
+    .result.error { color: #b91c1c; }
+
+    @media (max-width: 600px) {
+      .container { padding: 16px; }
+      .header { align-items: flex-start; }
+      .logo { font-size: 26px; }
+      .status { padding: 8px 12px; font-size: 14px; }
+      .card { padding: 20px; }
+    }
   </style>
 </head>
-
 <body>
-
 <div class="container">
-
   <div class="header">
     <div>
       <div class="logo">Lead2Job AI</div>
@@ -164,49 +185,21 @@
 
   <div class="card">
     <h2>AI gesprek</h2>
-
     <div class="chat">
-      <div class="message customer">
-        Goedemiddag, ik wil graag weten wat een nieuwe warmtepomp ongeveer kost.
-      </div>
-
-      <div class="message ai">
-        Goedemiddag! Ik help u graag. Mag ik weten welk type woning u heeft en of er al een cv-installatie aanwezig is?
-      </div>
-
-      <div class="message customer">
-        Een tussenwoning uit 1998. Er is al een cv-ketel.
-      </div>
-
-      <div class="message ai">
-        Dank u. Kunt u een foto van de huidige installatie sturen? Daarna bereiden wij de aanvraag voor de installateur voor.
-      </div>
+      <div class="message customer">Goedemiddag, ik wil graag weten wat een nieuwe warmtepomp ongeveer kost.</div>
+      <div class="message ai">Goedemiddag! Ik help u graag. Mag ik weten welk type woning u heeft en of er al een cv-installatie aanwezig is?</div>
+      <div class="message customer">Een tussenwoning uit 1998. Er is al een cv-ketel.</div>
+      <div class="message ai">Dank u. Kunt u een foto van de huidige installatie sturen? Daarna bereiden wij de aanvraag voor de installateur voor.</div>
     </div>
   </div>
 
   <div class="card">
     <h2>Dashboard</h2>
-
     <div class="stats">
-      <div class="stat">
-        Leads vandaag
-        <strong>17</strong>
-      </div>
-
-      <div class="stat">
-        AI offertes
-        <strong>8</strong>
-      </div>
-
-      <div class="stat">
-        Actie nodig
-        <strong>2</strong>
-      </div>
-
-      <div class="stat">
-        Open kansen
-        <strong>€12.450</strong>
-      </div>
+      <div class="stat">Leads vandaag<strong>17</strong></div>
+      <div class="stat">AI offertes<strong>8</strong></div>
+      <div class="stat">Actie nodig<strong>2</strong></div>
+      <div class="stat">Open kansen<strong>€12.450</strong></div>
     </div>
   </div>
 
@@ -214,28 +207,50 @@
     <h2>Goedkeuring nodig</h2>
     <p>Nieuwe offerte voor warmtepomp.</p>
     <h2>€2.750 excl. BTW</h2>
-    <<button onclick="sendLead()">
-      Goedkeuren en versturen
-    </button>
+    <button id="approveBtn" onclick="sendLead()">Goedkeuren en versturen</button>
+    <div id="result" class="result" aria-live="polite"></div>
   </div>
-
 </div>
+
 <script>
 async function sendLead() {
-  const response = await fetch('/api/leads', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      name: 'Test Lead',
-      service: 'CV-storing',
-      value: 650
-    })
-  });
+  const button = document.getElementById('approveBtn');
+  const result = document.getElementById('result');
 
-  const data = await response.json();
-  alert(data.message);
+  button.disabled = true;
+  button.textContent = 'Versturen...';
+  result.className = 'result';
+  result.textContent = '';
+
+  try {
+    const response = await fetch('/api/leads', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: 'Mark Peters',
+        service: 'Warmtepomp',
+        value: 2750,
+        status: 'approved'
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || 'Versturen mislukt');
+    }
+
+    result.className = 'result ok';
+    result.textContent = 'Lead succesvol ontvangen.';
+    button.textContent = 'Verstuurd';
+  } catch (error) {
+    result.className = 'result error';
+    result.textContent = error.message || 'Er ging iets mis.';
+    button.disabled = false;
+    button.textContent = 'Opnieuw proberen';
+  }
 }
 </script>
 </body>
