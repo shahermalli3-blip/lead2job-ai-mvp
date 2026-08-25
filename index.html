@@ -220,6 +220,23 @@
   </div>
 
 </div>
+<script>
+async function sendLead() {
+  const response = await fetch('/api/leads', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: 'Test Lead',
+      service: 'CV-storing',
+      value: 650
+    })
+  });
 
+  const data = await response.json();
+  alert(data.message);
+}
+</script>
 </body>
 </html>
