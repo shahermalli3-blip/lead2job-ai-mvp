@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lead2Job AI</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      color: #111827;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 25px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    .logo {
+      font-size: 32px;
+      font-weight: bold;
+    }
+
+    .status {
+      background: #dcfce7;
+      color: #15803d;
+      padding: 10px 16px;
+      border-radius: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 5px 20px rgba(0,0,0,.05);
+    }
+
+    .lead {
+      border: 1px solid #e5e7eb;
+      padding: 18px;
+      border-radius: 15px;
+      margin: 12px 0;
+    }
+
+    .lead h3 {
+      margin: 0 0 8px;
+    }
+
+    .price {
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #eef2ff;
+      color: #2563eb;
+      padding: 7px 12px;
+      border-radius: 15px;
+      margin-top: 8px;
+    }
+
+    .chat {
+      background: #f8fafc;
+      padding: 20px;
+      border-radius: 15px;
+    }
+
+    .message {
+      padding: 12px;
+      border-radius: 12px;
+      margin: 10px 0;
+      max-width: 85%;
+    }
+
+    .customer {
+      background: white;
+      border: 1px solid #ddd;
+    }
+
+    .ai {
+      background: #dbeafe;
+      margin-left: auto;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2,1fr);
+      gap: 12px;
+    }
+
+    .stat {
+      background: #f8fafc;
+      padding: 20px;
+      border-radius: 15px;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 30px;
+      margin-top: 8px;
+    }
+
+    button {
+      background: #2563eb;
+      color: white;
+      border: 0;
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div>
+      <div class="logo">Lead2Job AI</div>
+      <div>AI Sales Employee</div>
+    </div>
+    <div class="status">● Systeem actief</div>
+  </div>
+
+  <div class="card">
+    <h2>Nieuwe leads</h2>
+
+    <div class="lead">
+      <h3>Jeroen van Dijk</h3>
+      <div>Installatiebedrijf Noord · CV-storing</div>
+      <div class="price">€650</div>
+      <span class="badge">AI volgt op</span>
+    </div>
+
+    <div class="lead">
+      <h3>Sanne de Boer</h3>
+      <div>Badkamer Service Amsterdam · Renovatie</div>
+      <div class="price">€4.800</div>
+      <span class="badge">Offerte klaar</span>
+    </div>
+
+    <div class="lead">
+      <h3>Mark Peters</h3>
+      <div>HVAC Amsterdam · Warmtepomp</div>
+      <div class="price">€2.750</div>
+      <span class="badge">Goedkeuring nodig</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>AI gesprek</h2>
+
+    <div class="chat">
+      <div class="message customer">
+        Goedemiddag, ik wil graag weten wat een nieuwe warmtepomp ongeveer kost.
+      </div>
+
+      <div class="message ai">
+        Goedemiddag! Ik help u graag. Mag ik weten welk type woning u heeft en of er al een cv-installatie aanwezig is?
+      </div>
+
+      <div class="message customer">
+        Een tussenwoning uit 1998. Er is al een cv-ketel.
+      </div>
+
+      <div class="message ai">
+        Dank u. Kunt u een foto van de huidige installatie sturen? Daarna bereiden wij de aanvraag voor de installateur voor.
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Dashboard</h2>
+
+    <div class="stats">
+      <div class="stat">
+        Leads vandaag
+        <strong>17</strong>
+      </div>
+
+      <div class="stat">
+        AI offertes
+        <strong>8</strong>
+      </div>
+
+      <div class="stat">
+        Actie nodig
+        <strong>2</strong>
+      </div>
+
+      <div class="stat">
+        Open kansen
+        <strong>€12.450</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Goedkeuring nodig</h2>
+    <p>Nieuwe offerte voor warmtepomp.</p>
+    <h2>€2.750 excl. BTW</h2>
+    <button onclick="alert('Offerte goedgekeurd')">
+      Goedkeuren en versturen
+    </button>
+  </div>
+
+</div>
+
+</body>
+</html>
