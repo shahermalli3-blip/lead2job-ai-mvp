@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Offerte aanvragen</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#0f172a}.wrap{max-width:680px;margin:40px auto;padding:18px}.card{background:#fff;border-radius:18px;padding:24px;box-shadow:0 8px 30px rgba(15,23,42,.08)}h1{margin-top:0}.muted{color:#64748b}input,select,textarea{width:100%;padding:13px;border:1px solid #cbd5e1;border-radius:11px;font:inherit;margin-top:9px}textarea{min-height:110px}button{margin-top:12px;width:100%;border:0;border-radius:11px;padding:13px;font:inherit;font-weight:700;background:#2563eb;color:#fff;cursor:pointer}button:disabled{opacity:.55}.msg{margin-top:12px;font-weight:700}.ok{color:#15803d}.err{color:#b91c1c}
+</style>
+</head>
+<body><div class="wrap"><div class="card"><h1>Offerte aanvragen</h1><p class="muted">Laat uw gegevens achter. We nemen zo snel mogelijk contact met u op.</p>
+<input id="name" placeholder="Naam *"><input id="phone" placeholder="Telefoon"><input id="email" type="email" placeholder="E-mail"><input id="service" placeholder="Welke dienst heeft u nodig? *"><input id="city" placeholder="Plaats"><select id="urgency"><option value="normal">Normaal</option><option value="high">Urgent</option><option value="emergency">Spoed</option><option value="low">Geen haast</option></select><textarea id="description" placeholder="Omschrijving"></textarea><button id="send" onclick="submitLead()">Aanvraag versturen</button><div id="msg" class="msg"></div></div></div>
+<script>
+const endpoint='https://npqiispbwwinnnvzyybx.supabase.co/functions/v1/intake-lead';
+const token=new URLSearchParams(location.search).get('token')||'';
+const $=id=>document.getElementById(id);
+async function submitLead(){const name=$('name').value.trim(),service=$('service').value.trim();if(!token){$('msg').className='msg err';$('msg').textContent='Deze link is niet geldig.';return}if(!name||!service){$('msg').className='msg err';$('msg').textContent='Vul naam en dienst in.';return}$('send').disabled=true;$('msg').textContent='';try{const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','x-inbox-token':token},body:JSON.stringify({name,phone:$('phone').value.trim(),email:$('email').value.trim(),service,city:$('city').value.trim(),urgency:$('urgency').value,description:$('description').value.trim()})});const data=await r.json();if(!r.ok||!data.success)throw new Error(data.error||'Opslaan mislukt');$('msg').className='msg ok';$('msg').textContent='Bedankt. Uw aanvraag is ontvangen.';['name','phone','email','service','city','description'].forEach(id=>$(id).value='')}catch(e){$('msg').className='msg err';$('msg').textContent='Er ging iets mis. Probeer het opnieuw.'}finally{$('send').disabled=false}}
+</script></body></html>
