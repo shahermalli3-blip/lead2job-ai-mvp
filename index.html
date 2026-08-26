@@ -1,122 +1,94 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lead2Job AI</title>
-  <style>
-    *{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f7fb;color:#111827}.container{max-width:980px;margin:auto;padding:22px}.header{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:20px}.logo{font-size:32px;font-weight:800}.sub{color:#64748b;margin-top:3px}.status{background:#dcfce7;color:#15803d;padding:10px 15px;border-radius:999px;white-space:nowrap;font-weight:700}.card{background:#fff;border-radius:20px;padding:22px;margin-bottom:18px;box-shadow:0 5px 20px rgba(0,0,0,.05)}h2{margin-top:0}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{background:#f8fafc;padding:18px;border-radius:16px}.stat strong{display:block;font-size:28px;margin-top:8px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.toolbar button,.smallbtn{width:auto}.lead{border:1px solid #e5e7eb;padding:18px;border-radius:16px;margin:12px 0;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center}.lead h3{margin:0 0 6px}.meta{color:#64748b;font-size:14px}.price{font-size:22px;font-weight:800;margin-top:7px}.badge{display:inline-block;padding:7px 11px;border-radius:999px;margin-top:8px;font-size:14px;background:#eef2ff;color:#2563eb}.badge.won{background:#dcfce7;color:#15803d}.badge.follow_up{background:#fff7ed;color:#c2410c}.badge.quote_sent{background:#ede9fe;color:#6d28d9}.actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}button{background:#2563eb;color:#fff;border:0;padding:12px 16px;border-radius:12px;font-size:15px;cursor:pointer}button.secondary{background:#e2e8f0;color:#0f172a}button.success{background:#16a34a}button:disabled{opacity:.6;cursor:not-allowed}.formgrid{display:grid;grid-template-columns:1.5fr 1.5fr 1fr 1fr;gap:10px}.formgrid input,.formgrid select{width:100%;padding:13px;border:1px solid #cbd5e1;border-radius:12px;font-size:16px;background:#fff}.notice{margin-top:10px;font-weight:700}.ok{color:#15803d}.error{color:#b91c1c}.empty{color:#64748b;text-align:center;padding:20px}.footer-note{font-size:13px;color:#64748b;margin-top:8px}@media(max-width:700px){.container{padding:14px}.header{align-items:flex-start}.logo{font-size:27px}.stats{grid-template-columns:repeat(2,1fr)}.lead{grid-template-columns:1fr}.actions{justify-content:flex-start}.formgrid{grid-template-columns:1fr}.status{font-size:13px;padding:8px 10px}}
-  </style>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Lead2Job AI</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#f4f7fb;color:#0f172a}.wrap{max-width:1180px;margin:auto;padding:18px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:18px}.brand{font-size:30px;font-weight:900}.muted{color:#64748b}.pill{padding:9px 13px;border-radius:999px;background:#e2e8f0;font-weight:700;font-size:13px}.okpill{background:#dcfce7;color:#166534}.grid{display:grid;gap:14px}.stats{grid-template-columns:repeat(4,1fr)}.card{background:#fff;border-radius:18px;padding:18px;box-shadow:0 6px 24px rgba(15,23,42,.06)}h2,h3{margin-top:0}.stat strong{display:block;font-size:28px;margin-top:7px}.form{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.form .wide{grid-column:span 2}input,select,textarea{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:11px;font:inherit;background:#fff}textarea{min-height:82px;resize:vertical}button{border:0;border-radius:11px;padding:11px 14px;font:inherit;font-weight:700;cursor:pointer;background:#2563eb;color:white}button.secondary{background:#e2e8f0;color:#0f172a}button.green{background:#16a34a}button.danger{background:#dc2626}button:disabled{opacity:.55}.actions{display:flex;flex-wrap:wrap;gap:8px}.lead{border:1px solid #e2e8f0;border-radius:15px;padding:15px;margin-top:10px;display:grid;grid-template-columns:1fr auto;gap:12px}.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:12px;font-weight:700;margin-top:7px}.badge.won{background:#dcfce7;color:#166534}.badge.follow_up{background:#ffedd5;color:#9a3412}.badge.quote_sent{background:#ede9fe;color:#6d28d9}.tabs{display:flex;gap:8px;flex-wrap:wrap}.hidden{display:none!important}.auth{max-width:460px;margin:9vh auto}.auth .card{padding:28px}.auth input{margin:7px 0}.notice{margin-top:9px;font-weight:700}.error{color:#b91c1c}.success{color:#15803d}.section-title{display:flex;justify-content:space-between;align-items:center;gap:10px}.two{grid-template-columns:1fr 1fr}.mini{font-size:13px}.empty{text-align:center;color:#64748b;padding:20px}.modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:14px}.modalbox{background:#fff;border-radius:18px;padding:20px;width:min(540px,100%)}
+@media(max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}.form{grid-template-columns:1fr 1fr}.form .wide{grid-column:span 2}.lead{grid-template-columns:1fr}.two{grid-template-columns:1fr}.top{align-items:flex-start}.brand{font-size:26px}}@media(max-width:520px){.form{grid-template-columns:1fr}.form .wide{grid-column:auto}.stats{grid-template-columns:1fr 1fr}}
+</style>
 </head>
 <body>
-<div class="container">
-  <div class="header"><div><div class="logo">Lead2Job AI</div><div class="sub">AI Revenue Agent voor servicebedrijven</div></div><div class="status" id="systemStatus">● Verbinden...</div></div>
-
+<div id="authView" class="auth">
   <div class="card">
-    <h2>Dashboard</h2>
-    <div class="stats">
-      <div class="stat">Leads<strong id="statLeads">0</strong></div>
-      <div class="stat">Offertes<strong id="statQuotes">0</strong></div>
-      <div class="stat">Actie nodig<strong id="statAction">0</strong></div>
-      <div class="stat">Open kansen<strong id="statValue">€0</strong></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>Nieuwe lead toevoegen</h2>
-    <div class="formgrid">
-      <input id="nameInput" placeholder="Naam klant" autocomplete="name">
-      <input id="serviceInput" placeholder="Dienst, bijv. CV-storing">
-      <input id="valueInput" type="number" min="0" placeholder="Geschatte €">
-      <select id="urgencyInput"><option value="normal">Normaal</option><option value="high">Hoog</option><option value="emergency">Spoed</option><option value="low">Laag</option></select>
-    </div>
-    <button id="addButton" style="margin-top:10px" onclick="addLead()">Lead toevoegen</button>
-    <div id="formResult" class="notice" aria-live="polite"></div>
-    <div class="footer-note">Leads worden veilig via de server opgeslagen in Supabase.</div>
-  </div>
-
-  <div class="card">
-    <div class="toolbar">
-      <button class="secondary" onclick="setFilter('all')">Alles</button>
-      <button class="secondary" onclick="setFilter('new')">Nieuw</button>
-      <button class="secondary" onclick="setFilter('follow_up')">Follow-up</button>
-      <button class="secondary" onclick="setFilter('quote_sent')">Offerte</button>
-      <button class="secondary" onclick="setFilter('won')">Gewonnen</button>
-    </div>
-    <h2>Pipeline</h2>
-    <div id="leadList"><div class="empty">Leads laden...</div></div>
+    <div class="brand">Lead2Job AI</div><p class="muted">Van gemiste lead naar betaalde klus.</p>
+    <h3>Inloggen</h3>
+    <input id="email" type="email" placeholder="E-mailadres" autocomplete="email">
+    <input id="password" type="password" placeholder="Wachtwoord (min. 6 tekens)" autocomplete="current-password">
+    <div class="actions"><button onclick="signIn()">Inloggen</button><button class="secondary" onclick="signUp()">Account maken</button></div>
+    <div id="authMsg" class="notice"></div>
   </div>
 </div>
 
+<div id="appView" class="wrap hidden">
+  <div class="top"><div><div class="brand">Lead2Job AI</div><div class="muted">AI Revenue Agent voor servicebedrijven</div></div><div class="actions"><span id="who" class="pill okpill">● Actief</span><button class="secondary" onclick="signOut()">Uitloggen</button></div></div>
+
+  <div class="grid stats">
+    <div class="card stat">Leads<strong id="sLeads">0</strong></div>
+    <div class="card stat">Offertes<strong id="sQuotes">0</strong></div>
+    <div class="card stat">Actie nodig<strong id="sAction">0</strong></div>
+    <div class="card stat">Open waarde<strong id="sValue">€0</strong></div>
+  </div>
+
+  <div class="grid two" style="margin-top:14px">
+    <div class="card"><h2>Nieuwe lead</h2><div class="form">
+      <input id="lName" class="wide" placeholder="Naam klant"><input id="lPhone" placeholder="Telefoon"><input id="lEmail" placeholder="E-mail">
+      <input id="lService" class="wide" placeholder="Dienst, bijv. CV-storing"><input id="lCity" placeholder="Plaats"><select id="lUrgency"><option value="normal">Normaal</option><option value="high">Hoog</option><option value="emergency">Spoed</option><option value="low">Laag</option></select>
+      <input id="lValue" type="number" min="0" placeholder="Geschatte €"><select id="lChannel"><option value="manual">Handmatig</option><option value="phone">Telefoon</option><option value="whatsapp">WhatsApp</option><option value="email">E-mail</option><option value="website">Website</option></select>
+      <textarea id="lDesc" class="wide" placeholder="Omschrijving"></textarea>
+    </div><button id="addLeadBtn" style="margin-top:10px" onclick="addLead()">Lead opslaan</button><div id="leadMsg" class="notice"></div></div>
+
+    <div class="card"><div class="section-title"><h2>Komende acties</h2><button class="secondary" onclick="loadAll()">Vernieuwen</button></div><div id="nextActions" class="empty">Geen acties.</div></div>
+  </div>
+
+  <div class="card" style="margin-top:14px"><div class="section-title"><h2>Pipeline</h2><div class="tabs">
+    <button class="secondary" onclick="setFilter('all')">Alles</button><button class="secondary" onclick="setFilter('new')">Nieuw</button><button class="secondary" onclick="setFilter('follow_up')">Follow-up</button><button class="secondary" onclick="setFilter('quote_sent')">Offerte</button><button class="secondary" onclick="setFilter('won')">Gewonnen</button>
+  </div></div><div id="leadList"><div class="empty">Laden...</div></div></div>
+</div>
+
+<div id="actionModal" class="modal hidden"><div class="modalbox"><div class="section-title"><h3 id="modalTitle">Actie</h3><button class="secondary" onclick="closeModal()">Sluiten</button></div><div id="modalBody"></div></div></div>
+
 <script>
-let filter='all';
-let leads=[];
+const SB_URL='https://npqiispbwwinnnvzyybx.supabase.co';
+const SB_KEY='sb_publishable_-igxS01wBSa1ImPr0u4Xwg_fmbNMTuM';
+const sb=window.supabase.createClient(SB_URL,SB_KEY);
+let leads=[],quotes=[],appointments=[],followups=[],filter='all',session=null;
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
+const euro=n=>new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(Number(n)||0);
+const label=s=>({new:'Nieuw',qualified:'Gekwalificeerd',booked:'Afspraak',quote_sent:'Offerte verstuurd',follow_up:'Follow-up',won:'Gewonnen',lost:'Verloren'})[s]||s;
+function msg(id,text,ok=false){const e=$(id);e.textContent=text;e.className='notice '+(ok?'success':'error')}
+async function signIn(){const {error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)return msg('authMsg',error.message);msg('authMsg','Ingelogd.',true)}
+async function signUp(){const email=$('email').value.trim(),password=$('password').value;if(password.length<6)return msg('authMsg','Gebruik minimaal 6 tekens.');const {data,error}=await sb.auth.signUp({email,password,options:{data:{full_name:email.split('@')[0]}}});if(error)return msg('authMsg',error.message);if(!data.session)msg('authMsg','Account gemaakt. Controleer je e-mail om te bevestigen.',true);else msg('authMsg','Account gemaakt en ingelogd.',true)}
+async function signOut(){await sb.auth.signOut()}
+function showAuth(){session=null;$('authView').classList.remove('hidden');$('appView').classList.add('hidden')}
+async function showApp(s){session=s;$('authView').classList.add('hidden');$('appView').classList.remove('hidden');$('who').textContent='● '+(s.user.email||'Actief');await loadAll()}
+sb.auth.onAuthStateChange((_e,s)=>{s?showApp(s):showAuth()});
+(async()=>{const {data}=await sb.auth.getSession();data.session?showApp(data.session):showAuth()})();
 
-function euro(n){return new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(Number(n)||0);}
-function escapeHtml(v){return String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));}
-function label(status){return ({new:'Nieuw',qualified:'Gekwalificeerd',booked:'Afspraak',quote_sent:'Offerte verstuurd',follow_up:'AI volgt op',won:'Gewonnen',lost:'Verloren'})[status]||status;}
-function leadValue(l){return Number(l.estimated_value_max ?? l.estimated_value_min ?? 0);}
-function setFilter(value){filter=value;render();}
-
-function render(){
-  document.getElementById('statLeads').textContent=leads.length;
-  document.getElementById('statQuotes').textContent=leads.filter(l=>l.status==='quote_sent').length;
-  document.getElementById('statAction').textContent=leads.filter(l=>['new','qualified','follow_up'].includes(l.status)).length;
-  document.getElementById('statValue').textContent=euro(leads.filter(l=>!['won','lost'].includes(l.status)).reduce((s,l)=>s+leadValue(l),0));
-  const shown=filter==='all'?leads:leads.filter(l=>l.status===filter);
-  const list=document.getElementById('leadList');
-  if(!shown.length){list.innerHTML='<div class="empty">Geen leads in deze fase.</div>';return;}
-  list.innerHTML=shown.map(l=>`<div class="lead"><div><h3>${escapeHtml(l.name||'Onbekende klant')}</h3><div class="meta">${escapeHtml(l.service_type||'Geen dienst')} · ${escapeHtml(l.city||'Locatie onbekend')} · urgentie: ${escapeHtml(l.urgency||'normal')}</div><div class="price">${euro(leadValue(l))}</div><span class="badge ${escapeHtml(l.status)}">${escapeHtml(label(l.status))}</span></div><div class="actions"><button class="smallbtn secondary" onclick="changeStatus('${l.id}','follow_up')">Follow-up</button><button class="smallbtn" onclick="changeStatus('${l.id}','quote_sent')">Offerte</button><button class="smallbtn success" onclick="changeStatus('${l.id}','won')">Gewonnen</button></div></div>`).join('');
-}
-
-async function loadLeads(){
-  try{
-    const response=await fetch('/api/leads',{cache:'no-store'});
-    const data=await response.json();
-    if(!response.ok||!data.success)throw new Error(data.error||'Leads laden mislukt');
-    leads=Array.isArray(data.leads)?data.leads:[];
-    document.getElementById('systemStatus').textContent='● Systeem actief';
-    render();
-  }catch(e){
-    document.getElementById('systemStatus').textContent='● Configuratie nodig';
-    document.getElementById('leadList').innerHTML=`<div class="empty error">${escapeHtml(e.message||'Kan geen verbinding maken')}</div>`;
-  }
-}
-
-async function addLead(){
-  const name=document.getElementById('nameInput').value.trim();
-  const service=document.getElementById('serviceInput').value.trim();
-  const valueRaw=document.getElementById('valueInput').value;
-  const urgency=document.getElementById('urgencyInput').value;
-  const result=document.getElementById('formResult');
-  const button=document.getElementById('addButton');
-  result.className='notice';result.textContent='';
-  if(!name||!service){result.className='notice error';result.textContent='Vul naam en dienst in.';return;}
-  const value=valueRaw===''?null:Number(valueRaw);
-  if(value!==null&&(!Number.isFinite(value)||value<0)){result.className='notice error';result.textContent='Vul een geldig bedrag in.';return;}
-  button.disabled=true;
-  try{
-    const response=await fetch('/api/leads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,service,value,urgency,channel:'manual'})});
-    const data=await response.json();
-    if(!response.ok||!data.success)throw new Error(data.error||'Lead kon niet worden opgeslagen');
-    if(data.lead)leads.unshift(data.lead);
-    render();
-    document.getElementById('nameInput').value='';document.getElementById('serviceInput').value='';document.getElementById('valueInput').value='';
-    result.className='notice ok';result.textContent='Lead opgeslagen in Supabase.';
-  }catch(e){result.className='notice error';result.textContent=e.message||'Er ging iets mis.';}finally{button.disabled=false;}
-}
-
-async function changeStatus(id,status){
-  try{
-    const response=await fetch('/api/leads',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,status})});
-    const data=await response.json();
-    if(!response.ok||!data.success)throw new Error(data.error||'Status wijzigen mislukt');
-    leads=leads.map(l=>l.id===id?(data.lead||{...l,status}):l);
-    render();
-  }catch(e){alert(e.message||'Er ging iets mis.');}
-}
-
-loadLeads();
+async function loadAll(){if(!session)return;const [a,b,c,d]=await Promise.all([
+  sb.from('leads').select('*').order('created_at',{ascending:false}).limit(300),
+  sb.from('quotes').select('*').order('created_at',{ascending:false}).limit(300),
+  sb.from('appointments').select('*').order('starts_at',{ascending:true}).limit(300),
+  sb.from('follow_ups').select('*').order('due_at',{ascending:true}).limit(300)
+]);
+const err=a.error||b.error||c.error||d.error;if(err){$('leadList').innerHTML='<div class="empty error">'+esc(err.message)+'</div>';return}
+leads=a.data||[];quotes=b.data||[];appointments=c.data||[];followups=d.data||[];render();}
+function setFilter(v){filter=v;renderLeads()}
+function render(){ $('sLeads').textContent=leads.length;$('sQuotes').textContent=quotes.filter(q=>['draft','sent'].includes(q.status)).length;$('sAction').textContent=leads.filter(l=>['new','qualified','follow_up'].includes(l.status)).length;$('sValue').textContent=euro(leads.filter(l=>!['won','lost'].includes(l.status)).reduce((n,l)=>n+Number(l.estimated_value_max||l.estimated_value_min||0),0));renderLeads();renderActions();}
+function renderLeads(){const shown=filter==='all'?leads:leads.filter(l=>l.status===filter);if(!shown.length){$('leadList').innerHTML='<div class="empty">Geen leads in deze fase.</div>';return}$('leadList').innerHTML=shown.map(l=>`<div class="lead"><div><h3>${esc(l.name||'Onbekend')}</h3><div class="muted mini">${esc(l.service_type||'Geen dienst')} · ${esc(l.city||'Locatie onbekend')} · ${esc(l.phone||l.email||'Geen contact')}</div><div style="font-size:20px;font-weight:800;margin-top:6px">${euro(l.estimated_value_max||l.estimated_value_min||0)}</div><span class="badge ${esc(l.status)}">${esc(label(l.status))}</span></div><div class="actions"><button class="secondary" onclick="openFollowUp('${l.id}')">Follow-up</button><button onclick="openQuote('${l.id}')">Offerte</button><button class="secondary" onclick="openAppointment('${l.id}')">Afspraak</button><button class="green" onclick="changeStatus('${l.id}','won')">Gewonnen</button></div></div>`).join('')}
+function renderActions(){const now=new Date();const items=[];followups.filter(f=>f.status==='pending').slice(0,5).forEach(f=>items.push({t:new Date(f.due_at),text:'Follow-up: '+leadName(f.lead_id)}));appointments.filter(a=>['booked','confirmed'].includes(a.status)&&new Date(a.starts_at)>=now).slice(0,5).forEach(a=>items.push({t:new Date(a.starts_at),text:'Afspraak: '+leadName(a.lead_id)}));items.sort((x,y)=>x.t-y.t);$('nextActions').innerHTML=items.length?items.slice(0,6).map(i=>`<div style="padding:9px 0;border-bottom:1px solid #e2e8f0"><strong>${esc(i.text)}</strong><div class="muted mini">${esc(i.t.toLocaleString('nl-NL'))}</div></div>`).join(''):'<div class="empty">Geen acties.</div>'}
+function leadName(id){return leads.find(l=>l.id===id)?.name||'Klant'}
+async function addLead(){const name=$('lName').value.trim(),service=$('lService').value.trim();if(!name||!service)return msg('leadMsg','Naam en dienst zijn verplicht.');$('addLeadBtn').disabled=true;const value=$('lValue').value===''?null:Number($('lValue').value);const payload={name,phone:$('lPhone').value.trim()||null,email:$('lEmail').value.trim()||null,service_type:service,city:$('lCity').value.trim()||null,urgency:$('lUrgency').value,channel:$('lChannel').value,description:$('lDesc').value.trim()||null,estimated_value_min:value,estimated_value_max:value,status:'new'};const {error}=await sb.from('leads').insert(payload);$('addLeadBtn').disabled=false;if(error)return msg('leadMsg',error.message);['lName','lPhone','lEmail','lService','lCity','lValue','lDesc'].forEach(i=>$(i).value='');msg('leadMsg','Lead veilig opgeslagen.',true);await loadAll()}
+async function changeStatus(id,status){const {error}=await sb.from('leads').update({status}).eq('id',id);if(error)return alert(error.message);await loadAll()}
+function openModal(title,html){$('modalTitle').textContent=title;$('modalBody').innerHTML=html;$('actionModal').classList.remove('hidden')}
+function closeModal(){$('actionModal').classList.add('hidden')}
+function openQuote(id){openModal('Offerte voor '+leadName(id),`<input id="qAmount" type="number" min="0" placeholder="Bedrag €"><input id="qDays" type="number" min="1" value="14" placeholder="Geldig dagen" style="margin-top:8px"><textarea id="qNotes" placeholder="Notities" style="margin-top:8px"></textarea><button style="margin-top:9px" onclick="saveQuote('${id}')">Offerte opslaan</button>`)}
+async function saveQuote(id){const amount=Number($('qAmount').value),days=Number($('qDays').value||14);if(!Number.isFinite(amount)||amount<0)return alert('Vul een geldig bedrag in.');const valid=new Date();valid.setDate(valid.getDate()+days);const {error}=await sb.from('quotes').insert({lead_id:id,amount,currency:'EUR',status:'sent',sent_at:new Date().toISOString(),valid_until:valid.toISOString().slice(0,10),notes:$('qNotes').value.trim()||null});if(error)return alert(error.message);await sb.from('leads').update({status:'quote_sent'}).eq('id',id);closeModal();await loadAll()}
+function openFollowUp(id){const dt=new Date(Date.now()+24*3600*1000);const local=new Date(dt.getTime()-dt.getTimezoneOffset()*60000).toISOString().slice(0,16);openModal('Follow-up voor '+leadName(id),`<input id="fDue" type="datetime-local" value="${local}"><select id="fChannel" style="margin-top:8px"><option value="whatsapp">WhatsApp</option><option value="email">E-mail</option><option value="phone">Telefoon</option></select><textarea id="fMsg" placeholder="Bericht / notitie" style="margin-top:8px"></textarea><button style="margin-top:9px" onclick="saveFollowUp('${id}')">Follow-up plannen</button>`)}
+async function saveFollowUp(id){const due=$('fDue').value;if(!due)return alert('Kies datum en tijd.');const {error}=await sb.from('follow_ups').insert({lead_id:id,due_at:new Date(due).toISOString(),channel:$('fChannel').value,status:'pending',message:$('fMsg').value.trim()||null});if(error)return alert(error.message);await sb.from('leads').update({status:'follow_up'}).eq('id',id);closeModal();await loadAll()}
+function openAppointment(id){const dt=new Date(Date.now()+24*3600*1000);const local=new Date(dt.getTime()-dt.getTimezoneOffset()*60000).toISOString().slice(0,16);openModal('Afspraak voor '+leadName(id),`<input id="aStart" type="datetime-local" value="${local}"><input id="aMinutes" type="number" min="15" step="15" value="60" style="margin-top:8px" placeholder="Duur minuten"><textarea id="aNotes" placeholder="Notities" style="margin-top:8px"></textarea><button style="margin-top:9px" onclick="saveAppointment('${id}')">Afspraak boeken</button>`)}
+async function saveAppointment(id){const start=$('aStart').value,min=Number($('aMinutes').value||60);if(!start)return alert('Kies datum en tijd.');const s=new Date(start),e=new Date(s.getTime()+min*60000);const {error}=await sb.from('appointments').insert({lead_id:id,starts_at:s.toISOString(),ends_at:e.toISOString(),status:'booked',notes:$('aNotes').value.trim()||null});if(error)return alert(error.message);await sb.from('leads').update({status:'booked'}).eq('id',id);closeModal();await loadAll()}
 </script>
-</body>
-</html>
+</body></html>
