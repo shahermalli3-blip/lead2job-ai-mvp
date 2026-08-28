@@ -11,6 +11,7 @@ on:
       - 'actions.html'
       - 'agent.html'
       - 'requests.html'
+      - 'channels.html'
       - 'reception-test.html'
       - 'privacy.html'
       - 'manifest.webmanifest'
