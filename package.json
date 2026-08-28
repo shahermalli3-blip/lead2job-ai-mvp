@@ -5,6 +5,7 @@
   "description": "Native mobile packaging for the Lead2Job customer app.",
   "scripts": {
     "mobile:prepare": "node scripts/prepare-mobile.mjs",
+    "mobile:assets": "capacitor-assets generate",
     "mobile:sync": "npm run mobile:prepare && cap sync",
     "mobile:android": "npm run mobile:sync && cap open android",
     "mobile:ios": "npm run mobile:sync && cap open ios"
@@ -15,6 +16,7 @@
     "@capacitor/ios": "8.5.0"
   },
   "devDependencies": {
+    "@capacitor/assets": "3.0.5",
     "@capacitor/cli": "8.5.0"
   }
 }
