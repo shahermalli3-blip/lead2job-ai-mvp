@@ -4,7 +4,6 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"content-type, x-inbox-token","Access-Control-Allow-Methods":"POST, OPTIONS"};
 const json=(status:number,body:unknown)=>new Response(JSON.stringify(body),{status,headers:{...cors,"Content-Type":"application/json"}});
 const clean=(v:unknown,max=1000)=>{if(v===null||v===undefined)return null;const s=String(v).trim();return s?s.slice(0,max):null;};
-
 type Collected={name?:string|null;service_type?:string|null;city?:string|null;preferred_time?:string|null;description?:string|null;phone?:string|null;email?:string|null};
 type AiResult={reply:string;collected:Collected;ready_to_create_lead:boolean;handoff:boolean;handoff_reason:string|null;owner_summary:string;owner_next_action:string};
 const ns={type:"string",nullable:true};
@@ -34,55 +33,27 @@ Deno.serve(async(req:Request)=>{
     const token=clean(req.headers.get('x-inbox-token')||body.token,100),message=clean(body.message,3000);
     if(!token)return json(401,{success:false,error:'Missing inbox token'});
     if(!message)return json(400,{success:false,error:'message is required'});
-    const url=Deno.env.get('SUPABASE_URL'),serviceKey=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    if(!url||!serviceKey)return json(500,{success:false,error:'Server configuration incomplete'});
-    const admin=createClient(url,serviceKey,{auth:{persistSession:false}});
-    const iq=await admin.from('inboxes').select('id,owner_id,name,enabled').eq('public_token',token).eq('enabled',true).maybeSingle();
-    if(iq.error||!iq.data)return json(401,{success:false,error:'Invalid inbox token'});
-    const inbox=iq.data,channel=clean(body.channel,40)||'api',externalContact=clean(body.external_contact,200);
-    let conversation:any=null;
-    const requestedId=clean(body.conversation_id,80);
-    if(requestedId){
-      const q=await admin.from('conversations').select('*').eq('id',requestedId).eq('owner_id',inbox.owner_id).eq('inbox_id',inbox.id).maybeSingle();
-      if(q.error)return json(400,{success:false,error:'Could not load conversation'});
-      conversation=q.data;
-      if(!conversation)return json(404,{success:false,error:'Conversation not found'});
+    const url=Deno.env.get('SUPABASE_URL'),anon=Deno.env.get('SUPABASE_ANON_KEY');
+    if(!url||!anon)return json(500,{success:false,error:'Server configuration incomplete'});
+    const db=createClient(url,anon,{auth:{persistSession:false}});
+    const channel=clean(body.channel,40)||'api',externalContact=clean(body.external_contact,200),conversationId=clean(body.conversation_id,80);
+    const start=await db.rpc('reception_start_message',{p_token:token,p_message:message,p_channel:channel,p_external_contact:externalContact,p_conversation_id:conversationId});
+    if(start.error||!start.data){
+      const code=String(start.error?.message||'');
+      if(code.includes('invalid_inbox_token'))return json(401,{success:false,error:'Invalid inbox token'});
+      if(code.includes('conversation_not_found'))return json(404,{success:false,error:'Conversation not found'});
+      return json(500,{success:false,error:'Could not start conversation',detail:start.error?.message});
     }
-    if(!conversation){
-      const q=await admin.from('conversations').insert({owner_id:inbox.owner_id,inbox_id:inbox.id,channel,external_contact:externalContact,status:'open'}).select('*').single();
-      if(q.error||!q.data)return json(500,{success:false,error:'Could not create conversation'});
-      conversation=q.data;
-    }
-    const incoming=await admin.from('conversation_messages').insert({conversation_id:conversation.id,owner_id:inbox.owner_id,direction:'inbound',role:'customer',content:message});
-    if(incoming.error)return json(500,{success:false,error:'Could not save incoming message'});
-    const {data:history}=await admin.from('conversation_messages').select('role,content').eq('conversation_id',conversation.id).order('created_at',{ascending:false}).limit(12);
-    const {data:profile}=await admin.from('profiles').select('business_name,service_type,city').eq('id',inbox.owner_id).maybeSingle();
-    const existing:Collected={...(conversation.collected||{})};
-    if(!existing.phone&&['sms','whatsapp','phone'].includes(channel)&&externalContact)existing.phone=externalContact;
-    if(!existing.email&&channel==='email'&&externalContact)existing.email=externalContact;
-    const ai=await askGemini({business_name:profile?.business_name||inbox.name||'bedrijf',business_service:profile?.service_type||'',business_city:profile?.city||'',existing,history:(history||[]).reverse()});
+    const state:any=start.data;
+    const existing:Collected={...(state.collected||{})};
+    if(!existing.phone&&['sms','whatsapp','phone'].includes(state.channel)&&state.external_contact)existing.phone=state.external_contact;
+    if(!existing.email&&state.channel==='email'&&state.external_contact)existing.email=state.external_contact;
+    const ai=await askGemini({business_name:state.business_name||'bedrijf',business_service:state.business_service||'',business_city:state.business_city||'',existing,history:Array.isArray(state.history)?state.history:[]});
     const merged:Collected={...existing,...Object.fromEntries(Object.entries(ai.collected||{}).filter(([,v])=>v!==null&&v!==''))};
-    let leadId=conversation.lead_id as string|null;
-    const reachable=Boolean(merged.phone||merged.email||(['sms','whatsapp','phone','email'].includes(channel)&&externalContact));
-    if(!leadId&&ai.ready_to_create_lead&&merged.service_type&&reachable){
-      const q=await admin.from('leads').insert({owner_id:inbox.owner_id,name:merged.name||'Nieuwe klant',phone:merged.phone||null,email:merged.email||null,channel,service_type:merged.service_type,description:merged.description||null,city:merged.city||null,preferred_time:merged.preferred_time||null,urgency:'normal',status:'new',notes:'Automatisch aangemaakt door AI-receptionist'}).select('id').single();
-      if(q.error||!q.data)return json(500,{success:false,error:'Could not create lead'});
-      leadId=q.data.id;
-      await admin.from('activities').insert({lead_id:leadId,type:'lead_created',channel,direction:'inbound',content:'Lead automatisch aangemaakt vanuit klantgesprek',metadata:{conversation_id:conversation.id,inbox_id:inbox.id,source:'ai_receptionist'}});
-      await admin.from('activities').insert({lead_id:leadId,type:'ai_intake_summary',channel:'ai',direction:'internal',content:ai.owner_summary,metadata:{conversation_id:conversation.id,next_action:ai.owner_next_action,handoff:ai.handoff,handoff_reason:ai.handoff_reason}});
-      const taskChannel=['whatsapp','sms','email','phone'].includes(channel)?channel:(merged.phone?'phone':'email');
-      await admin.from('follow_ups').insert({lead_id:leadId,due_at:new Date().toISOString(),channel:taskChannel,status:'pending',message:`${ai.owner_next_action}\n\n${ai.owner_summary}`});
-    }else if(leadId){
-      const patch:any={};
-      for(const k of ['name','phone','email','service_type','description','city','preferred_time'] as const)if(merged[k])patch[k]=merged[k];
-      if(Object.keys(patch).length)await admin.from('leads').update(patch).eq('id',leadId).eq('owner_id',inbox.owner_id);
-    }
-    const newStatus=ai.handoff?'handoff':(leadId&&ai.ready_to_create_lead?'qualified':conversation.status);
-    const cq=await admin.from('conversations').update({lead_id:leadId,collected:merged,status:newStatus,updated_at:new Date().toISOString()}).eq('id',conversation.id).eq('owner_id',inbox.owner_id);
-    if(cq.error)return json(500,{success:false,error:'Could not update conversation'});
-    const outgoing=await admin.from('conversation_messages').insert({conversation_id:conversation.id,owner_id:inbox.owner_id,direction:'outbound',role:'assistant',content:ai.reply});
-    if(outgoing.error)return json(500,{success:false,error:'Could not save assistant reply'});
-    return json(200,{success:true,conversation_id:conversation.id,lead_id:leadId,status:newStatus,reply:ai.reply,handoff:ai.handoff,handoff_reason:ai.handoff_reason,collected:merged,owner_summary:ai.owner_summary,owner_next_action:ai.owner_next_action});
+    const finish=await db.rpc('reception_finish_message',{p_token:token,p_conversation_id:state.conversation_id,p_reply:ai.reply,p_collected:merged,p_ready:ai.ready_to_create_lead,p_handoff:ai.handoff,p_handoff_reason:ai.handoff_reason,p_owner_summary:ai.owner_summary,p_owner_next_action:ai.owner_next_action});
+    if(finish.error||!finish.data)return json(500,{success:false,error:'Could not finish conversation',detail:finish.error?.message});
+    const result:any=finish.data;
+    return json(200,{success:true,conversation_id:result.conversation_id,lead_id:result.lead_id,status:result.status,reply:ai.reply,handoff:ai.handoff,handoff_reason:ai.handoff_reason,collected:merged,owner_summary:ai.owner_summary,owner_next_action:ai.owner_next_action});
   }catch(e){
     console.error('receive-customer-message error',e);
     return json(500,{success:false,error:'Unexpected server error',detail:e instanceof Error?e.message:String(e)});
