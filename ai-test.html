@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Lead2Job AI – AI test</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#f4f7fb;color:#0f172a}.wrap{max-width:760px;margin:auto;padding:18px}.card{background:#fff;border-radius:18px;padding:20px;margin:14px 0;box-shadow:0 6px 24px rgba(15,23,42,.06)}h1,h2{margin-top:0}.muted{color:#64748b}.grid{display:grid;gap:10px}input,select,button{width:100%;padding:12px;border-radius:11px;font:inherit}input,select{border:1px solid #cbd5e1;background:#fff}button{border:0;background:#2563eb;color:#fff;font-weight:800;cursor:pointer}button.secondary{background:#e2e8f0;color:#0f172a}button:disabled{opacity:.55}.hidden{display:none}.result{white-space:pre-wrap;line-height:1.5;background:#f8fafc;border-radius:12px;padding:14px}.ok{color:#15803d;font-weight:800}.error{color:#b91c1c;font-weight:800}.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#e0e7ff;color:#3730a3;font-size:12px;font-weight:800;margin-bottom:10px}
+</style>
+</head><body><div class="wrap">
+<div class="card"><h1>Lead2Job AI – AI analyse test</h1><p class="muted">Veilige MVP-test. De huidige modus is gratis mock totdat echte AI expliciet wordt ingeschakeld.</p></div>
+<div id="authCard" class="card"><h2>Inloggen</h2><div class="grid"><input id="email" type="email" placeholder="E-mailadres"><input id="password" type="password" placeholder="Wachtwoord"><button id="loginBtn">Inloggen</button></div><div id="authMsg"></div></div>
+<div id="app" class="hidden"><div class="card"><h2>Kies een lead</h2><select id="leadSelect"></select><button id="analyzeBtn" style="margin-top:10px">AI analyse uitvoeren</button><p class="muted">Er wordt niets automatisch naar de klant gestuurd en er wordt geen leadstatus gewijzigd.</p></div><div id="resultCard" class="card hidden"><div id="provider" class="badge"></div><div id="result" class="result"></div></div></div>
+</div>
+<script>
+const SB_URL='https://npqiispbwwinnnvzyybx.supabase.co';
+const SB_KEY='sb_publishable_-igxS01wBSa1ImPr0u4Xwg_fmbNMTuM';
+const sb=window.supabase.createClient(SB_URL,SB_KEY);
+const $=id=>document.getElementById(id);
+function setAuthMsg(text,ok=false){$('authMsg').textContent=text;$('authMsg').className=ok?'ok':'error'}
+async function loadLeads(){const {data,error}=await sb.from('leads').select('id,name,service_type,status').order('created_at',{ascending:false}).limit(50);if(error)throw error;$('leadSelect').innerHTML=(data||[]).map(l=>`<option value="${l.id}">${l.name||'Onbekend'} — ${l.service_type||'Geen dienst'} (${l.status})</option>`).join('');if(!(data||[]).length)$('leadSelect').innerHTML='<option value="">Geen leads gevonden</option>'}
+async function showApp(){ $('authCard').classList.add('hidden');$('app').classList.remove('hidden');try{await loadLeads()}catch(e){$('resultCard').classList.remove('hidden');$('result').textContent='Leads laden mislukt: '+e.message;$('result').className='result error'}}
+$('loginBtn').onclick=async()=>{const b=$('loginBtn');b.disabled=true;const {error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});b.disabled=false;if(error)return setAuthMsg(error.message);setAuthMsg('Ingelogd.',true);showApp()};
+$('analyzeBtn').onclick=async()=>{const lead_id=$('leadSelect').value;if(!lead_id)return;const b=$('analyzeBtn');b.disabled=true;b.textContent='Analyseren...';$('resultCard').classList.remove('hidden');$('provider').textContent='Bezig';$('result').textContent='Lead wordt geanalyseerd...';$('result').className='result';try{const {data,error}=await sb.functions.invoke('analyze-lead',{body:{lead_id}});if(error)throw error;if(!data?.success)throw new Error(data?.error||'Analyse mislukt');const a=data.analysis;$('provider').textContent=`${data.provider} · ${data.model}`;$('result').textContent=`Prioriteit: ${a.priority}\nKwaliteit: ${a.quality_score}/100 (${a.qualification})\n\nVolgende actie:\n${a.next_action}\n\nConcept antwoord:\n${a.reply_draft}\n\nAfspraak nodig: ${a.needs_appointment?'ja':'nee'}\nFollow-up nodig: ${a.needs_follow_up?'ja':'nee'}\n\nSamenvatting:\n${a.summary}`;}catch(e){$('provider').textContent='Fout';$('result').textContent=e.message||String(e);$('result').className='result error'}finally{b.disabled=false;b.textContent='AI analyse uitvoeren'}};
+(async()=>{const {data}=await sb.auth.getSession();if(data.session)showApp()})();
+</script></body></html>
