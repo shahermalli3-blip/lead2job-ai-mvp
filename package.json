@@ -4,16 +4,17 @@
   "private": true,
   "description": "Native mobile packaging for the Lead2Job customer app.",
   "scripts": {
-    "mobile:sync": "cap sync",
-    "mobile:android": "cap open android",
-    "mobile:ios": "cap open ios"
+    "mobile:prepare": "node scripts/prepare-mobile.mjs",
+    "mobile:sync": "npm run mobile:prepare && cap sync",
+    "mobile:android": "npm run mobile:sync && cap open android",
+    "mobile:ios": "npm run mobile:sync && cap open ios"
   },
   "dependencies": {
-    "@capacitor/android": "latest",
-    "@capacitor/core": "latest",
-    "@capacitor/ios": "latest"
+    "@capacitor/android": "8.5.0",
+    "@capacitor/core": "8.5.0",
+    "@capacitor/ios": "8.5.0"
   },
   "devDependencies": {
-    "@capacitor/cli": "latest"
+    "@capacitor/cli": "8.5.0"
   }
 }
