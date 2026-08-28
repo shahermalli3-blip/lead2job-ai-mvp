@@ -12,6 +12,7 @@ const files = [
   'agent.html',
   'reception-test.html',
   'requests.html',
+  'channels.html',
   'privacy.html',
   'manifest.webmanifest',
   'icon.svg'
