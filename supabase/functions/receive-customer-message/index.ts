@@ -9,14 +9,14 @@ type AiResult={reply:string;collected:Collected;ready_to_create_lead:boolean;han
 const ns={type:"string",nullable:true};
 const schema={type:"object",properties:{reply:{type:"string"},collected:{type:"object",properties:{name:ns,service_type:ns,city:ns,preferred_time:ns,description:ns,phone:ns,email:ns},required:["name","service_type","city","preferred_time","description","phone","email"]},ready_to_create_lead:{type:"boolean"},handoff:{type:"boolean"},handoff_reason:ns,owner_summary:{type:"string"},owner_next_action:{type:"string"}},required:["reply","collected","ready_to_create_lead","handoff","handoff_reason","owner_summary","owner_next_action"]};
 
-async function askGemini(input:{business_name:string;business_service:string;business_city:string;existing:Collected;history:{role:string;content:string}[]}):Promise<AiResult>{
+async function askGemini(input:{business_name:string;business_service:string;business_city:string;existing:Collected;contact_available:boolean;history:{role:string;content:string}[]}):Promise<AiResult>{
   const key=Deno.env.get("GEMINI_API_KEY")||Deno.env.get("GEIMINI_API_KEY");
   if(!key)throw new Error("Gemini API key is not configured");
   const model="gemini-3.5-flash-lite";
   const prompt=`Je bent de digitale AI-receptionist van ${input.business_name||'dit servicebedrijf'} in Nederland. Het bedrijf doet vooral: ${input.business_service||'dienstverlening'}. Werkgebied: ${input.business_city||'niet ingesteld'}.
 Help de klant snel en vriendelijk. Stel per antwoord maximaal EEN korte vraag en vraag nooit opnieuw wat al bekend is. Verzamel alleen wat nodig is om een bruikbare aanvraag door te geven. Verzin NOOIT prijzen, beschikbaarheid, garanties, adressen of bedrijfsregels en bevestig NOOIT dat het bedrijf op een gevraagde datum of tijd beschikbaar is. Als iets niet zeker is, zeg dat het team dit bevestigt en zet handoff=true wanneer menselijke beoordeling nodig is. Als de klant vraagt met wie hij praat, wees transparant dat je de digitale AI-assistent van het bedrijf bent. Antwoord in de taal van de klant.
-Maak ready_to_create_lead=true pas wanneer ten minste de gewenste dienst, een bruikbare locatie/stad en een bereikbare contactmogelijkheid bekend zijn. Bestaand verzameld: ${JSON.stringify(input.existing)}. Recente conversatie: ${JSON.stringify(input.history)}.
-collected is de beste samengevoegde stand van bekende feiten. description is een korte feitelijke samenvatting. owner_summary is een zeer korte samenvatting voor de ondernemer. owner_next_action is precies één praktische volgende stap voor de ondernemer en moet bij voorkeur zeggen dat prijs/planning nog bevestigd moeten worden wanneer die niet bekend zijn.`;
+Maak ready_to_create_lead=true pas wanneer ten minste de gewenste dienst, een bruikbare locatie/stad en een bereikbare contactmogelijkheid bekend zijn. Bereikbaar contact beschikbaar: ${input.contact_available}. Bestaand verzameld zonder ruwe contactgegevens: ${JSON.stringify(input.existing)}. Recente conversatie: ${JSON.stringify(input.history)}.
+Zet phone en email in collected ALTIJD op null; contactgegevens worden buiten het AI-model veilig bewaard. collected is verder de beste samengevoegde stand van bekende feiten. description is een korte feitelijke samenvatting. owner_summary is een zeer korte samenvatting voor de ondernemer. owner_next_action is precies één praktische volgende stap voor de ondernemer en moet bij voorkeur zeggen dat prijs/planning nog bevestigd moeten worden wanneer die niet bekend zijn.`;
   const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{responseMimeType:"application/json",responseSchema:schema,thinkingConfig:{thinkingLevel:"minimal"}}})});
   const p=await r.json();
   if(!r.ok)throw new Error(p?.error?.message||`Gemini request failed (${r.status})`);
@@ -48,8 +48,11 @@ Deno.serve(async(req:Request)=>{
     const existing:Collected={...(state.collected||{})};
     if(!existing.phone&&['sms','whatsapp','phone'].includes(state.channel)&&state.external_contact)existing.phone=state.external_contact;
     if(!existing.email&&state.channel==='email'&&state.external_contact)existing.email=state.external_contact;
-    const ai=await askGemini({business_name:state.business_name||'bedrijf',business_service:state.business_service||'',business_city:state.business_city||'',existing,history:Array.isArray(state.history)?state.history:[]});
-    const merged:Collected={...existing,...Object.fromEntries(Object.entries(ai.collected||{}).filter(([,v])=>v!==null&&v!==''))};
+    const contactAvailable=Boolean(existing.phone||existing.email||(['sms','whatsapp','phone','email'].includes(state.channel)&&state.external_contact));
+    const aiExisting:Collected={...existing,phone:null,email:null};
+    const ai=await askGemini({business_name:state.business_name||'bedrijf',business_service:state.business_service||'',business_city:state.business_city||'',existing:aiExisting,contact_available:contactAvailable,history:Array.isArray(state.history)?state.history:[]});
+    const aiCollected:Collected={...(ai.collected||{}),phone:null,email:null};
+    const merged:Collected={...existing,...Object.fromEntries(Object.entries(aiCollected).filter(([,v])=>v!==null&&v!==''))};
     const company=String(state.business_name||'het bedrijf');
     let customerReply=ai.reply;
     if(ai.handoff)customerReply=`Dank je. Ik geef je vraag door aan ${company}. Zij bevestigen dit met je.`;
