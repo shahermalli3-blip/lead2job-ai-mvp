@@ -11,6 +11,7 @@ const files = [
   'actions.html',
   'agent.html',
   'reception-test.html',
+  'requests.html',
   'privacy.html',
   'manifest.webmanifest',
   'icon.svg'
