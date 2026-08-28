@@ -48,7 +48,11 @@ Deno.serve(async(req:Request)=>{
     const existing:Collected={...(state.collected||{})};
     if(!existing.phone&&['sms','whatsapp','phone'].includes(state.channel)&&state.external_contact)existing.phone=state.external_contact;
     if(!existing.email&&state.channel==='email'&&state.external_contact)existing.email=state.external_contact;
-    const contactAvailable=Boolean(existing.phone||existing.email||(['sms','whatsapp','phone','email'].includes(state.channel)&&state.external_contact));
+    if(state.channel==='website'&&state.external_contact){
+      if(String(state.external_contact).includes('@')) existing.email=existing.email||state.external_contact;
+      else existing.phone=existing.phone||state.external_contact;
+    }
+    const contactAvailable=Boolean(existing.phone||existing.email||(['sms','whatsapp','phone','email','website'].includes(state.channel)&&state.external_contact));
     const aiExisting:Collected={...existing,phone:null,email:null};
     const ai=await askGemini({business_name:state.business_name||'bedrijf',business_service:state.business_service||'',business_city:state.business_city||'',existing:aiExisting,contact_available:contactAvailable,history:Array.isArray(state.history)?state.history:[]});
     const aiCollected:Collected={...(ai.collected||{}),phone:null,email:null};
