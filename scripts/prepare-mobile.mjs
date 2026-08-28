@@ -10,6 +10,7 @@ const files = [
   'new.html',
   'actions.html',
   'agent.html',
+  'reception-test.html',
   'privacy.html',
   'manifest.webmanifest',
   'icon.svg'
