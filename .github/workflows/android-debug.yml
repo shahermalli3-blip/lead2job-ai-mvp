@@ -5,6 +5,13 @@ on:
   push:
     branches: [main]
     paths:
+      - 'start.html'
+      - 'setup.html'
+      - 'new.html'
+      - 'actions.html'
+      - 'agent.html'
+      - 'manifest.webmanifest'
+      - 'icon.svg'
       - 'package.json'
       - 'capacitor.config.ts'
       - 'scripts/**'
@@ -27,7 +34,7 @@ jobs:
           node-version: '22'
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
