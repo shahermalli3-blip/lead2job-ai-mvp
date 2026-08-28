@@ -32,7 +32,7 @@ Deno.serve(async(req:Request)=>{
     const core=await fetch(url+'/functions/v1/receive-customer-message',{
       method:'POST',
       headers:{'Content-Type':'application/json','x-inbox-token':state.inbox_token},
-      body:JSON.stringify({channel:state.channel,external_contact:from,message})
+      body:JSON.stringify({channel:state.channel,external_contact:from,message,conversation_id:state.conversation_id||null})
     });
     const result=await core.json().catch(()=>({}));
     if(!core.ok||!result.success){
