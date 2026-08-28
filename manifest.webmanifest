@@ -1,0 +1,19 @@
+{
+  "name": "Lead2Job",
+  "short_name": "Lead2Job",
+  "description": "Eenvoudige AI-assistent voor kleine servicebedrijven.",
+  "start_url": "/start.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f4f7fb",
+  "theme_color": "#2563eb",
+  "lang": "nl",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
